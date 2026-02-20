@@ -1,14 +1,30 @@
 import { useState, useRef, useEffect, useMemo } from "react";
 
+// Hook to detect mobile screen size
+const useIsMobile = () => {
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+  
+  return isMobile;
+};
+
 const clusterData = {
   clusters: [
-    { id: 1, name: "Strong Opposition – Community Character", shortName: "Community Chara...", color: "#ef4444" },
-    { id: 2, name: "Strong Opposition – Process & Democracy", shortName: "Process & Democ...", color: "#dc2626" },
-    { id: 3, name: "Opposition – Infrastructure & Services", shortName: "Infrastructure ...", color: "#f97316" },
-    { id: 4, name: "Conditional / Nuanced", shortName: "Nuanced", color: "#a855f7" },
-    { id: 5, name: "Support – Housing Affordability & Supply", shortName: "Housing Afforda...", color: "#3b82f6" },
-    { id: 6, name: "Support – Environmental & Sustainability", shortName: "Environmental &...", color: "#22c55e" },
-    { id: 7, name: "Other / Unclear", shortName: "Unclear", color: "#64748b" },
+    { id: 1, name: "Strong Opposition – Community Character", shortName: "Community Character", color: "#ef4444" },
+    { id: 2, name: "Strong Opposition – Process & Democracy", shortName: "Process & Democracy", color: "#dc2626" },
+    { id: 3, name: "Opposition – Infrastructure & Services", shortName: "Infrastructure & Services", color: "#f97316" },
+    { id: 4, name: "Conditional / Nuanced", shortName: "Conditional / Nuanced", color: "#a855f7" },
+    { id: 5, name: "Support – Housing Affordability & Supply", shortName: "Housing Affordability", color: "#3b82f6" },
+    { id: 6, name: "Support – Environmental & Sustainability", shortName: "Environmental & Sustainability", color: "#22c55e" },
+    { id: 7, name: "Other / Unclear", shortName: "Other / Unclear", color: "#64748b" },
   ],
   comments: [
     { id: 1, text: "H-GO should not have parking minimums at all and should be allowed city-wide as part of the changes to blanket zoning, RCG is insufficient. If you want to increase supply you should not be restricting what kind of low and medium-density developments can be built where, let the market decide what is needed. We need homes now, and allowing H-GO everywhere improves density, which we desperately lack. These changes should have been made 20-30 years ago, don\'t make the same mistake again, do it now.", cluster: 5, x: 0.7327, y: 0.0293 },
@@ -5139,6 +5155,7 @@ const clusterData = {
 clusterData.summary = summary;
 
 export default function App() {
+  const isMobile = useIsMobile();
   const [activeCluster, setActiveCluster] = useState(null);
   const [hoveredComment, setHoveredComment] = useState(null);
   const [selectedComment, setSelectedComment] = useState(null);
@@ -5149,8 +5166,8 @@ export default function App() {
   const [hiddenClusters, setHiddenClusters] = useState(new Set());
   const svgRef = useRef(null);
 
-  const W = 680, H = 580;
-  const PAD = 48;
+  const W = isMobile ? window.innerWidth - 32 : 2040, H = isMobile ? 400 : 1740;
+  const PAD = isMobile ? 20 : 144;
 
   const toSVG = (v, dim) => {
     const range = dim === "x" ? W : H;
@@ -5180,10 +5197,10 @@ export default function App() {
       {/* Header */}
       <div style={{
         borderBottom: "1px solid #1e2030",
-        padding: "20px 32px 18px",
+        padding: isMobile ? "16px 20px 14px" : "20px 32px 18px",
         background: "linear-gradient(180deg, #12121a 0%, #0f0f13 100%)",
       }}>
-        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
+        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", flexWrap: "wrap", gap: isMobile ? 8 : 12 }}>
           <div>
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
               <div style={{
@@ -5198,10 +5215,10 @@ export default function App() {
               }}>Opinion Cluster Map</div>
               <div style={{ fontSize: 11, color: "#64748b" }}>Inspired by Polis</div>
             </div>
-            <h1 style={{ margin: 0, fontSize: 20, fontWeight: 700, color: "#f1f5f9", lineHeight: 1.2 }}>
+            <h1 style={{ margin: 0, fontSize: isMobile ? 18 : 20, fontWeight: 700, color: "#f1f5f9", lineHeight: 1.2 }}>
               Calgary Rezoning for Housing — Public Feedback
             </h1>
-            <p style={{ margin: "5px 0 0", fontSize: 13, color: "#64748b" }}>
+            <p style={{ margin: "5px 0 0", fontSize: isMobile ? 12 : 13, color: "#64748b" }}>
               {clusterData.summary.total} comments from {clusterData.summary.source_pages}-page verbatim report &bull; Public hearing: {clusterData.summary.hearing_date} &bull; {clusterData.summary.hearing_speakers} speakers
             </p>
           </div>
@@ -5242,11 +5259,14 @@ export default function App() {
         </div>
       </div>
 
-      <div style={{ display: "flex", gap: 0, height: "calc(100vh - 155px)", minHeight: 520 }}>
+      <div style={{ display: "flex", flexDirection: isMobile ? "column" : "row", gap: 0, height: isMobile ? "calc(100vh - 155px)" : "calc(100vh - 155px)", minHeight: isMobile ? "auto" : 520 }}>
         {/* Sidebar */}
         <div style={{
-          width: 220,
-          borderRight: "1px solid #1e2030",
+          width: isMobile ? "100%" : 280,
+          height: isMobile ? "auto" : "100%",
+          maxHeight: isMobile ? "200px" : "none",
+          borderRight: isMobile ? "none" : "1px solid #1e2030",
+          borderBottom: isMobile ? "1px solid #1e2030" : "none",
           padding: "16px 0",
           overflowY: "auto",
           background: "#0c0c10",
@@ -5278,18 +5298,19 @@ export default function App() {
               key={c.id}
               onClick={() => setActiveCluster(activeCluster === c.id ? null : c.id)}
               style={{
-                width: "100%", textAlign: "left", padding: "8px 14px",
+                width: "100%", textAlign: "left", padding: "10px 14px",
                 background: activeCluster === c.id ? "#1a1f35" : "transparent",
                 border: "none", borderLeft: `3px solid ${activeCluster === c.id ? c.color : "transparent"}`,
                 cursor: "pointer", color: activeCluster === c.id ? "#e2e8f0" : "#64748b",
                 fontSize: 12, fontWeight: activeCluster === c.id ? 600 : 400,
                 display: "flex", justifyContent: "space-between", alignItems: "center",
-                gap: 6, transition: "all 0.15s", opacity: hiddenClusters.has(c.id) ? 0.5 : 1
+                gap: 6, transition: "all 0.15s", opacity: hiddenClusters.has(c.id) ? 0.5 : 1,
+                minHeight: "40px"
               }}
             >
               <div style={{ display: "flex", alignItems: "center", gap: 8, flex: 1, minWidth: 0 }}>
                 <div style={{ width: 8, height: 8, borderRadius: "50%", background: c.color, flexShrink: 0 }} />
-                <span style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{c.shortName}</span>
+                <span style={{ whiteSpace: "nowrap" }}>{c.shortName}</span>
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                 <span style={{
@@ -5332,7 +5353,7 @@ export default function App() {
         </div>
 
         {/* Main area */}
-        <div style={{ flex: 1, overflow: "hidden", position: "relative" }}>
+        <div style={{ flex: 1, overflow: isMobile ? "auto" : "hidden", position: "relative" }}>
           {view === "scatter" ? (
             <div style={{ width: "100%", height: "100%", position: "relative" }}>
               <svg
@@ -5381,17 +5402,17 @@ export default function App() {
                 </defs>
 
                 <g transform={`translate(${W/2}, ${H/2}) scale(${zoom}) translate(${-W/2 + pan.x/zoom}, ${-H/2 + pan.y/zoom})`}>
-                <ellipse cx={W/2} cy={H/2} rx={280} ry={240} fill="url(#bgGrad)" />
+                <ellipse cx={W/2} cy={H/2} rx={840} ry={720} fill="url(#bgGrad)" />
 
                 {/* Axis lines */}
                 <line x1={PAD} y1={H/2} x2={W-PAD} y2={H/2} stroke="#1e2030" strokeWidth="1" strokeDasharray="4,4" />
                 <line x1={W/2} y1={PAD} x2={W/2} y2={H-PAD} stroke="#1e2030" strokeWidth="1" strokeDasharray="4,4" />
 
                 {/* Axis labels */}
-                <text x={PAD + 4} y={H/2 - 6} fill="#334155" fontSize="10" fontWeight="600">◀ OPPOSE</text>
-                <text x={W - PAD - 4} y={H/2 - 6} fill="#334155" fontSize="10" fontWeight="600" textAnchor="end">SUPPORT ▶</text>
-                <text x={W/2 + 6} y={PAD + 12} fill="#334155" fontSize="10" fontWeight="600">HOUSING / CLIMATE</text>
-                <text x={W/2 + 6} y={H - PAD - 4} fill="#334155" fontSize="10" fontWeight="600">NEIGHBOURHOOD / INFRA</text>
+                <text x={PAD + 4} y={H/2 - 6} fill="#334155" fontSize={isMobile ? "16" : "30"} fontWeight="600">◀ OPPOSE</text>
+                <text x={W - PAD - 4} y={H/2 - 6} fill="#334155" fontSize={isMobile ? "16" : "30"} fontWeight="600" textAnchor="end">SUPPORT ▶</text>
+                <text x={W/2 + 6} y={PAD + 12} fill="#334155" fontSize={isMobile ? "16" : "30"} fontWeight="600">HOUSING / CLIMATE</text>
+                <text x={W/2 + 6} y={H - PAD - 4} fill="#334155" fontSize={isMobile ? "16" : "30"} fontWeight="600">NEIGHBOURHOOD / INFRA</text>
 
                 {/* Cluster convex hull blobs (approximate with ellipses) */}
                 {clusterData.clusters.filter(c => !hiddenClusters.has(c.id)).map(c => {
@@ -5401,8 +5422,8 @@ export default function App() {
                   const ys = pts.map(p => toSVG(p.y, "y"));
                   const cx = xs.reduce((a,b) => a+b,0)/xs.length;
                   const cy = ys.reduce((a,b) => a+b,0)/ys.length;
-                  const rx = Math.max(...xs.map(x => Math.abs(x-cx))) + 18;
-                  const ry = Math.max(...ys.map(y => Math.abs(y-cy))) + 18;
+                  const rx = Math.max(...xs.map(x => Math.abs(x-cx))) + 54;
+                  const ry = Math.max(...ys.map(y => Math.abs(y-cy))) + 54;
                   const isActive = activeCluster === c.id;
                   const isFiltered = activeCluster && !isActive;
                   return (
@@ -5432,9 +5453,9 @@ export default function App() {
                   return (
                     <text
                       key={c.id}
-                      x={cx} y={minY - 10}
+                      x={cx} y={minY - 30}
                       fill={c.color}
-                      fontSize="9"
+                      fontSize={isMobile ? "14" : "27"}
                       fontWeight="700"
                       textAnchor="middle"
                       opacity={isFiltered ? 0.2 : 0.7}
@@ -5461,7 +5482,7 @@ export default function App() {
                       {(isHovered || isSelected) && (
                         <circle
                           cx={sx} cy={sy}
-                          r={isSelected ? 9 : 7}
+                          r={isSelected ? (isMobile ? 18 : 27) : (isMobile ? 14 : 21)}
                           fill={c.color}
                           fillOpacity="0.15"
                           style={{ pointerEvents: "none" }}
@@ -5469,11 +5490,11 @@ export default function App() {
                       )}
                       <circle
                         cx={sx} cy={sy}
-                        r={isSelected ? 5 : isHovered ? 4.5 : 3.5}
+                        r={isSelected ? (isMobile ? 10 : 15) : isHovered ? (isMobile ? 9 : 13.5) : (isMobile ? 7 : 10.5)}
                         fill={c.color}
                         fillOpacity={opacity}
                         stroke={isSelected ? "#fff" : "none"}
-                        strokeWidth={isSelected ? 1.5 : 0}
+                        strokeWidth={isSelected ? 4.5 : 0}
                         style={{
                           cursor: "pointer",
                           transition: "r 0.1s, fill-opacity 0.2s",
@@ -5524,78 +5545,79 @@ export default function App() {
               {hoveredComment && !selectedComment && (
                 <div style={{
                   position: "absolute",
-                  bottom: 16, left: "50%", transform: "translateX(-50%)",
+                  bottom: 48, left: "50%", transform: "translateX(-50%)",
                   background: "#1a1f2e",
                   border: `1px solid ${clusterMap[hoveredComment.cluster].color}40`,
-                  borderRadius: 10,
-                  padding: "10px 14px",
-                  maxWidth: 420,
-                  width: "calc(100% - 48px)",
+                  borderRadius: 30,
+                  padding: "30px 42px",
+                  maxWidth: 1260,
+                  width: "calc(100% - 144px)",
                   pointerEvents: "none",
                   zIndex: 10,
-                  boxShadow: "0 8px 32px rgba(0,0,0,0.5)"
+                  boxShadow: "0 24px 96px rgba(0,0,0,0.5)"
                 }}>
-                  <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 6 }}>
-                    <div style={{ width: 8, height: 8, borderRadius: "50%", background: clusterMap[hoveredComment.cluster].color, flexShrink: 0 }} />
-                    <span style={{ fontSize: 10, fontWeight: 700, color: clusterMap[hoveredComment.cluster].color, textTransform: "uppercase", letterSpacing: "0.06em" }}>
+                  <div style={{ display: "flex", gap: 24, alignItems: "center", marginBottom: 18 }}>
+                    <div style={{ width: 24, height: 24, borderRadius: "50%", background: clusterMap[hoveredComment.cluster].color, flexShrink: 0 }} />
+                    <span style={{ fontSize: isMobile ? 12 : 16, fontWeight: 700, color: clusterMap[hoveredComment.cluster].color, textTransform: "uppercase", letterSpacing: "0.06em" }}>
                       {clusterMap[hoveredComment.cluster].shortName}
                     </span>
                   </div>
-                  <p style={{ margin: 0, fontSize: 12, color: "#cbd5e1", lineHeight: 1.6 }}>{hoveredComment.text}</p>
+                  <p style={{ margin: 0, fontSize: isMobile ? 12 : 14, color: "#cbd5e1", lineHeight: 1.4 }}>{hoveredComment.text}</p>
                 </div>
               )}
 
               {/* Selected comment panel */}
               {selectedComment && (
                 <div style={{
-                  position: "absolute",
-                  bottom: 16, right: 16,
+                  position: isMobile ? "fixed" : "absolute",
+                  bottom: isMobile ? 0 : 48,
+                  left: isMobile ? 0 : "auto",
+                  right: isMobile ? 0 : 48,
+                  top: isMobile ? "auto" : "auto",
                   background: "#12121a",
                   border: `1px solid ${clusterMap[selectedComment.cluster].color}50`,
-                  borderRadius: 12,
-                  padding: "14px 16px",
-                  maxWidth: 340,
-                  zIndex: 10,
-                  boxShadow: "0 16px 48px rgba(0,0,0,0.7)"
+                  borderRadius: isMobile ? "24px 24px 0 0" : 36,
+                  padding: isMobile ? "24px 20px" : "42px 48px",
+                  maxWidth: isMobile ? "100%" : 1020,
+                  maxHeight: isMobile ? "70vh" : "none",
+                  overflowY: "auto",
+                  boxShadow: isMobile ? "0 -4px 20px rgba(0,0,0,0.3)" : "0 48px 144px rgba(0,0,0,0.7)"
                 }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8 }}>
-                    <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                      <div style={{ width: 10, height: 10, borderRadius: "50%", background: clusterMap[selectedComment.cluster].color }} />
-                      <span style={{ fontSize: 11, fontWeight: 700, color: clusterMap[selectedComment.cluster].color, textTransform: "uppercase", letterSpacing: "0.06em" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: isMobile ? 16 : 24 }}>
+                    <div style={{ display: "flex", gap: isMobile ? 16 : 24, alignItems: "center" }}>
+                      <div style={{ width: isMobile ? 24 : 30, height: isMobile ? 24 : 30, borderRadius: "50%", background: clusterMap[selectedComment.cluster].color }} />
+                      <span style={{ fontSize: isMobile ? 16 : 24, fontWeight: 700, color: clusterMap[selectedComment.cluster].color, textTransform: "uppercase", letterSpacing: "0.06em", lineHeight: 1.2 }}>
                         {clusterMap[selectedComment.cluster].name}
                       </span>
                     </div>
                     <button onClick={() => setSelectedComment(null)} style={{
-                      background: "none", border: "none", color: "#475569", cursor: "pointer", fontSize: 14, lineHeight: 1, padding: 0
+                      background: "none", border: "none", color: "#475569", cursor: "pointer", fontSize: isMobile ? 32 : 42, lineHeight: 1, padding: 0
                     }}>✕</button>
                   </div>
-                  <p style={{ margin: 0, fontSize: 13, color: "#e2e8f0", lineHeight: 1.65 }}>{selectedComment.text}</p>
-                  <div style={{ marginTop: 10, fontSize: 11, color: "#334155" }}>
-                    Position: x={selectedComment.x.toFixed(2)}, y={selectedComment.y.toFixed(2)}
-                  </div>
+                  <p style={{ margin: 0, fontSize: isMobile ? 16 : 24, color: "#e2e8f0", lineHeight: isMobile ? 1.4 : 1.5 }}>{selectedComment.text}</p>
                 </div>
               )}
             </div>
           ) : (
             /* List view */
-            <div style={{ overflowY: "auto", height: "100%", padding: "16px 24px" }}>
+            <div style={{ overflowY: "auto", height: "100%", padding: isMobile ? "20px" : "48px 72px" }}>
               {filteredComments.map(cm => (
                 <div key={cm.id} style={{
                   background: "#12121a",
                   border: "1px solid #1e2030",
-                  borderLeft: `3px solid ${clusterMap[cm.cluster].color}`,
-                  borderRadius: 8,
-                  padding: "12px 14px",
-                  marginBottom: 10,
+                  borderLeft: `9px solid ${clusterMap[cm.cluster].color}`,
+                  borderRadius: isMobile ? 16 : 24,
+                  padding: isMobile ? "20px" : "36px 42px",
+                  marginBottom: isMobile ? 16 : 30,
                   transition: "border-color 0.15s",
                 }}>
-                  <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 6 }}>
-                    <div style={{ width: 7, height: 7, borderRadius: "50%", background: clusterMap[cm.cluster].color }} />
-                    <span style={{ fontSize: 10, fontWeight: 700, color: clusterMap[cm.cluster].color, textTransform: "uppercase", letterSpacing: "0.06em" }}>
+                  <div style={{ display: "flex", gap: isMobile ? 16 : 24, alignItems: "center", marginBottom: isMobile ? 12 : 18 }}>
+                    <div style={{ width: isMobile ? 16 : 21, height: isMobile ? 16 : 21, borderRadius: "50%", background: clusterMap[cm.cluster].color }} />
+                    <span style={{ fontSize: isMobile ? 11 : 16, fontWeight: 700, color: clusterMap[cm.cluster].color, textTransform: "uppercase", letterSpacing: "0.06em" }}>
                       {clusterMap[cm.cluster].shortName}
                     </span>
                   </div>
-                  <p style={{ margin: 0, fontSize: 13, color: "#cbd5e1", lineHeight: 1.65 }}>{cm.text}</p>
+                  <p style={{ margin: 0, fontSize: isMobile ? 11 : 16, color: "#cbd5e1", lineHeight: isMobile ? 1.4 : 1.5 }}>{cm.text}</p>
                 </div>
               ))}
             </div>
