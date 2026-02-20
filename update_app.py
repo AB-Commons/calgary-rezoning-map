@@ -10,6 +10,7 @@ def escape_js_string(s):
     """Escape a string for JavaScript"""
     s = s.replace('\\', '\\\\')
     s = s.replace('"', '\\"')
+    s = s.replace("'", "\\'")  # Add this line to handle single quotes
     s = s.replace('\n', '\\n')
     s = s.replace('\r', '\\r')
     s = s.replace('\t', '\\t')
@@ -22,7 +23,8 @@ def main():
     clusters = {}
     stances = {}
     
-    with open('/Users/Sarah/Desktop/calgary-rezoning-map/verbatim_comments_all(1).csv', 'r', encoding='utf-8-sig') as f:
+    csv_path = 'data/verbatim_comments_all.csv'
+    with open(csv_path, 'r', encoding='utf-8-sig') as f:
         reader = csv.DictReader(f)
         for row in reader:
             # Clean up keys (remove BOM if present)
@@ -46,7 +48,7 @@ def main():
     # Calculate stance percentages
     oppose_pct = round(stances.get('oppose', 0) / total * 100)
     support_pct = round(stances.get('support', 0) / total * 100)
-    unclear_pct = 100 - oppose_pct - support_pct  # Remainder
+    unclear_pct = round(stances.get('unclear', 0) / total * 100)  # Use actual unclear count
     
     print(f"Stances: oppose={oppose_pct}%, support={support_pct}%, mixed={unclear_pct}%")
     
